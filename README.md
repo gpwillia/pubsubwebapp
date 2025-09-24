@@ -1,6 +1,6 @@
 # AWS Lambda Pub/Sub Solution with SNS
 
-A production-ready Publisher-Subscriber (Pub/Sub) solution using AWS Lambda and Amazon SNS as the message broker. This repository includes infrastructure as code, deployment automation, testing, and monitoring components.
+A production-ready, multi-environment Publisher-Subscriber (Pub/Sub) solution using AWS Lambda and Amazon SNS as the message broker. This repository includes infrastructure as code, automated multi-environment deployment, comprehensive monitoring, and enterprise-grade features for dev, stage, and production environments.
 
 ## Architecture Overview
 
@@ -19,13 +19,28 @@ A production-ready Publisher-Subscriber (Pub/Sub) solution using AWS Lambda and 
 
 ## Features
 
-- **Production-Ready**: Comprehensive error handling, monitoring, and logging
-- **Modular Design**: Clean separation of concerns and reusable components
-- **Infrastructure as Code**: Complete Terraform configuration
-- **CI/CD Ready**: Automated deployment scripts and GitHub Actions
-- **Monitoring**: CloudWatch dashboards, alarms, and custom metrics
-- **Testing**: Unit tests, integration tests, and benchmarking tools
-- **Security**: Least privilege IAM policies and VPC configuration
+### 🏗️ **Multi-Environment Support**
+- **Dev, Stage, Prod Environments**: Isolated Terraform workspaces with environment-specific configurations
+- **Automated Deployment**: PowerShell deployment script with validation and safety checks
+- **Environment Isolation**: Separate AWS resources, monitoring, and configuration per environment
+
+### 🚀 **Production-Ready Architecture**
+- **High Availability**: ARM64 Lambda architecture with configurable concurrency limits
+- **Error Handling**: Dead Letter Queues, retry policies, and circuit breaker patterns
+- **Monitoring**: Environment-specific CloudWatch alarms, dashboards, and custom metrics
+- **Audit Trail**: DynamoDB-based audit logging for stage and production environments
+
+### 🔒 **Enterprise Security**
+- **Least Privilege IAM**: Environment-specific roles with minimal required permissions  
+- **Encryption**: Optional encryption at rest and in transit
+- **VPC Support**: Optional VPC deployment for network isolation
+- **Message Filtering**: SNS message attribute filtering for environment routing
+
+### 📊 **Comprehensive Observability**
+- **15+ CloudWatch Alarms**: Performance, error rate, and throttling monitoring per environment
+- **Custom Dashboards**: Environment-specific monitoring dashboards
+- **X-Ray Tracing**: Distributed tracing enabled for production debugging
+- **Query Definitions**: Pre-built CloudWatch Insights queries for troubleshooting
 
 ## Project Structure
 
@@ -52,12 +67,12 @@ aws-lambda-pubsub-sns/
 │   ├── iam.tf
 │   ├── lambda.tf
 │   ├── sns.tf
-│   └── monitoring.tf
-├── scripts/
-│   ├── build.ps1
-│   ├── deploy.ps1
-│   ├── destroy.ps1
-│   └── test.ps1
+│   ├── monitoring.tf
+│   ├── terraform.tfvars.dev      # Dev environment config
+│   ├── terraform.tfvars.stage    # Stage environment config
+│   └── terraform.tfvars.prod     # Production environment config
+├── deploy.ps1                    # Multi-environment deployment script
+├── DEPLOYMENT.md                 # Comprehensive deployment guide
 ├── tests/
 │   ├── unit/
 │   │   ├── test_publisher.py
@@ -81,80 +96,125 @@ aws-lambda-pubsub-sns/
 
 ### Prerequisites
 
-- AWS CLI configured with appropriate credentials
-- Terraform >= 1.0
-- Python 3.9+
-- PowerShell 7+ (for deployment scripts)
+- **AWS CLI v2.x** configured with appropriate credentials for your account
+- **Terraform >= 1.13** installed at `C:\terraform\terraform.exe` (or update path in deploy script)
+- **PowerShell 5.1+** (Windows) or **PowerShell Core 7+** (cross-platform)
+- **Python 3.9+** (for Lambda functions)
 
 ### 1. Clone and Setup
 
 ```powershell
-git clone <repository-url>
+git clone https://github.com/gpwillia/pubsubwebapp.git
 cd aws-lambda-pubsub-sns
 ```
 
-### 2. Configure Variables
-
-Copy and customize the Terraform variables:
+### 2. Deploy to Development Environment
 
 ```powershell
-cp terraform/terraform.tfvars.example terraform/terraform.tfvars
-# Edit terraform.tfvars with your specific configuration
+# Deploy to dev environment (existing configuration)
+.\deploy.ps1 -Environment dev -Action apply -AutoApprove
 ```
 
-### 3. Deploy Infrastructure
+### 3. Deploy to Stage Environment
 
 ```powershell
-# Build Lambda packages
-.\scripts\build.ps1
+# Plan stage deployment (recommended first)
+.\deploy.ps1 -Environment stage -Action plan
 
-# Deploy infrastructure
-.\scripts\deploy.ps1
+# Deploy to stage with enhanced monitoring
+.\deploy.ps1 -Environment stage -Action apply
 ```
 
-### 4. Test the Solution
+### 4. Deploy to Production Environment
 
 ```powershell
-# Run all tests
-.\scripts\test.ps1
+# Plan production deployment
+.\deploy.ps1 -Environment prod -Action plan
 
-# Run benchmarks
-python tests/benchmarks/benchmark.py
+# Deploy to production (requires manual confirmation)
+.\deploy.ps1 -Environment prod -Action apply
 ```
 
-## Deployment Options
-
-### Option 1: Using PowerShell Scripts (Recommended)
+### 5. Test the Solution
 
 ```powershell
-# Full deployment
-.\scripts\deploy.ps1
+# Test publisher Lambda
+aws lambda invoke --function-name aws-lambda-pubsub-sns-dev-publisher --cli-binary-format raw-in-base64-out --payload file://test-payload.json response.json
 
-# Deploy specific environment
-.\scripts\deploy.ps1 -Environment "production"
-
-# Deploy with custom parameters
-.\scripts\deploy.ps1 -Region "us-west-2" -Environment "staging"
+# Check subscriber logs
+aws logs tail /aws/lambda/aws-lambda-pubsub-sns-dev-subscriber --since 5m
 ```
 
-### Option 2: Manual Terraform
+## Multi-Environment Deployment
+
+### Environment Configurations
+
+| Environment | Resources | Monitoring | Features | Use Case |
+|-------------|-----------|------------|----------|----------|
+| **dev** | 20 resources | Basic | Simple setup | Development, testing |
+| **stage** | 42 resources | Enhanced | Audit trail, 15 alarms | Pre-prod validation |
+| **prod** | 45+ resources | Full | API Gateway, enhanced security | Production workloads |
+
+### Deployment Commands
+
+```powershell
+# Development Environment
+.\deploy.ps1 -Environment dev -Action plan
+.\deploy.ps1 -Environment dev -Action apply -AutoApprove
+
+# Stage Environment (with enhanced monitoring)
+.\deploy.ps1 -Environment stage -Action plan
+.\deploy.ps1 -Environment stage -Action apply
+
+# Production Environment (requires confirmation)
+.\deploy.ps1 -Environment prod -Action plan
+.\deploy.ps1 -Environment prod -Action apply
+
+# Destroy environment
+.\deploy.ps1 -Environment dev -Action destroy
+```
+
+### Manual Terraform (Advanced Users)
 
 ```powershell
 cd terraform
 
-# Initialize Terraform
+# Initialize and select workspace
 terraform init
+terraform workspace select dev  # or stage, prod
 
-# Plan deployment
-terraform plan -var-file="terraform.tfvars"
+# Plan and apply
+terraform plan -var-file="terraform.tfvars.dev"
+terraform apply -var-file="terraform.tfvars.dev"
 
 # Apply deployment
-terraform apply -var-file="terraform.tfvars"
+terraform apply -var-file="terraform.tfvars.dev"
 ```
 
-### Option 3: GitHub Actions CI/CD
+## Environment-Specific Features
 
-Push to main branch to trigger automatic deployment via GitHub Actions.
+### Development Environment
+- **Purpose**: Feature development, unit testing, experimentation
+- **Resources**: 20 AWS resources
+- **Lambda Memory**: Publisher (256MB), Subscriber (512MB)
+- **Monitoring**: Basic CloudWatch logging
+- **Cost**: Optimized for minimal cost
+
+### Stage Environment  
+- **Purpose**: Integration testing, performance validation, UAT
+- **Resources**: 42 AWS resources
+- **Lambda Memory**: Publisher (256MB), Subscriber (512MB)
+- **Monitoring**: 15 CloudWatch alarms, custom dashboards
+- **Features**: DynamoDB audit trail, X-Ray tracing, enhanced monitoring
+- **Testing**: Production-like environment for comprehensive testing
+
+### Production Environment
+- **Purpose**: Live customer traffic, business-critical operations
+- **Resources**: 45+ AWS resources
+- **Lambda Memory**: Publisher (512MB), Subscriber (1024MB)
+- **Monitoring**: Full observability, enhanced monitoring, backup enabled
+- **Features**: API Gateway, extended log retention (30 days), concurrency controls
+- **Security**: Enhanced IAM policies, encryption, optional VPC deployment
 
 ## Configuration
 
@@ -225,22 +285,48 @@ See [tests/benchmarks/README.md](tests/benchmarks/README.md) for detailed benchm
 
 ## Monitoring and Observability
 
-### CloudWatch Dashboards
+### Environment-Specific Monitoring
 
-- **Lambda Metrics**: Duration, errors, invocations, throttles
-- **SNS Metrics**: Messages published, delivery success/failure
-- **Custom Business Metrics**: Message processing rates, latency
+#### Development Environment
+- **Basic Logging**: CloudWatch logs with 14-day retention
+- **X-Ray Tracing**: Enabled for debugging and performance analysis
 
-### Alarms
+#### Stage Environment (15 CloudWatch Alarms)
+- **Lambda Monitoring**: Duration, errors, throttles for both functions  
+- **SNS Monitoring**: Delivery failures, failed notifications
+- **Performance Alarms**: High duration, error rate thresholds
+- **Custom Dashboards**: Environment-specific performance metrics
+- **Query Definitions**: Pre-built CloudWatch Insights queries
 
-- High error rates
-- Function timeouts
-- SNS delivery failures
-- DLQ message accumulation
+#### Production Environment (15+ Alarms + Enhanced)
+- **All Stage Features** plus:
+- **Extended Retention**: 30-day log retention
+- **Enhanced Monitoring**: Additional performance and security metrics
+- **Backup Monitoring**: Data backup and recovery verification
 
-### Logging
+### CloudWatch Resources Created
 
-Structured JSON logging with correlation IDs for message tracing across the entire pipeline.
+```bash
+# Stage/Prod environments create:
+- 15 CloudWatch Alarms (duration, errors, throttles)
+- 2 CloudWatch Query Definitions  
+- 1 Monitoring SNS Topic for alerts
+- Custom CloudWatch Dashboard
+- DynamoDB audit trail table
+```
+
+### Monitoring Examples
+
+```powershell
+# Check environment-specific logs
+aws logs tail /aws/lambda/aws-lambda-pubsub-sns-stage-publisher --since 1h
+
+# View CloudWatch alarms
+aws cloudwatch describe-alarms --alarm-name-prefix "aws-lambda-pubsub-sns-stage"
+
+# Check DynamoDB audit trail
+aws dynamodb scan --table-name aws-lambda-pubsub-sns-stage-processing-results
+```
 
 ## Security
 
@@ -249,15 +335,73 @@ Structured JSON logging with correlation IDs for message tracing across the enti
 - **Encryption**: SNS topics encrypted with KMS
 - **Secrets Management**: Integration with AWS Secrets Manager
 
-## Cleanup
+## Environment Management
+
+### Switching Between Environments
 
 ```powershell
-# Destroy infrastructure
-.\scripts\destroy.ps1
+# List available Terraform workspaces
+terraform workspace list
 
-# Or manually with Terraform
+# Switch to specific environment
+terraform workspace select stage
+
+# Check current environment
+terraform workspace show
+```
+
+### Environment Cleanup
+
+```powershell
+# Destroy specific environment
+.\deploy.ps1 -Environment dev -Action destroy
+.\deploy.ps1 -Environment stage -Action destroy  
+.\deploy.ps1 -Environment prod -Action destroy
+
+# Manual Terraform destroy
 cd terraform
-terraform destroy -var-file="terraform.tfvars"
+terraform workspace select dev
+terraform destroy -var-file="terraform.tfvars.dev"
+```
+
+## Testing Across Environments
+
+### End-to-End Testing
+
+Create environment-specific test payload:
+
+```json
+{
+  "message": "Hello from [environment]!",
+  "messageAttributes": {
+    "Environment": "dev"  // or "stage", "prod"
+  }
+}
+```
+
+### Testing Commands
+
+```powershell
+# Test Development Environment
+aws lambda invoke --function-name aws-lambda-pubsub-sns-dev-publisher --cli-binary-format raw-in-base64-out --payload file://test-payload-dev.json response.json
+
+# Test Stage Environment  
+aws lambda invoke --function-name aws-lambda-pubsub-sns-stage-publisher --cli-binary-format raw-in-base64-out --payload file://test-payload-stage.json response.json
+
+# Test Production Environment
+aws lambda invoke --function-name aws-lambda-pubsub-sns-prod-publisher --cli-binary-format raw-in-base64-out --payload file://test-payload-prod.json response.json
+```
+
+### Verify Message Processing
+
+```powershell
+# Check subscriber logs for each environment
+aws logs tail /aws/lambda/aws-lambda-pubsub-sns-dev-subscriber --since 5m
+aws logs tail /aws/lambda/aws-lambda-pubsub-sns-stage-subscriber --since 5m  
+aws logs tail /aws/lambda/aws-lambda-pubsub-sns-prod-subscriber --since 5m
+
+# Check DLQ for failed messages (stage/prod)
+aws sqs get-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/[ACCOUNT]/aws-lambda-pubsub-sns-stage-dlq --attribute-names ApproximateNumberOfMessages
 ```
 
 ## Contributing
@@ -277,33 +421,48 @@ terraform destroy -var-file="terraform.tfvars"
 
 ## Documentation
 
-### Comprehensive Guides
+### 📚 Comprehensive Guides
+- **[Multi-Environment Deployment Guide](DEPLOYMENT.md)**: Complete guide for deploying across dev, stage, and prod environments
 - **[Architecture Documentation](docs/architecture.md)**: Detailed system architecture, design decisions, and component interactions
-- **[Deployment Guide](docs/deployment.md)**: Step-by-step deployment instructions for all environments  
-- **[Troubleshooting Guide](docs/troubleshooting.md)**: Common issues, solutions, and debugging procedures
+- **[Troubleshooting Guide](docs/troubleshooting.md)**: Environment-specific issues, solutions, and debugging procedures
 - **[Benchmark Testing](tests/benchmarks/README.md)**: Performance testing and benchmarking documentation
-- **[Monitoring Guide](monitoring/README.md)**: Comprehensive monitoring, alerting, and observability setup
+- **[Monitoring Guide](monitoring/README.md)**: Environment-specific monitoring, alerting, and observability setup
 
-### Quick References
-- **API Documentation**: Function interfaces and message formats
-- **Configuration Reference**: All available Terraform variables and options
-- **Security Best Practices**: IAM policies, encryption, and security guidelines
-- **Performance Tuning**: Optimization strategies and best practices
+### 🔧 Configuration Files
+- **`terraform.tfvars.dev`**: Development environment configuration (20 resources)
+- **`terraform.tfvars.stage`**: Stage environment configuration (42 resources, enhanced monitoring)  
+- **`terraform.tfvars.prod`**: Production environment configuration (45+ resources, full features)
+- **`deploy.ps1`**: Multi-environment deployment automation script
+
+### 📋 Quick References
+- **Environment Comparison**: Feature matrix across dev/stage/prod environments
+- **Deployment Commands**: PowerShell commands for each environment
+- **Monitoring Resources**: CloudWatch alarms, dashboards, and queries per environment
+- **Security Configuration**: Environment-specific IAM policies and encryption settings
 
 ## Troubleshooting
 
-For common issues and solutions, see the [Troubleshooting Guide](docs/troubleshooting.md).
+For comprehensive troubleshooting across all environments, see the [Multi-Environment Deployment Guide](DEPLOYMENT.md).
 
-### Quick Diagnostic Commands
-```bash
-# Check overall health
-aws lambda list-functions --query 'Functions[?contains(FunctionName, `pubsub`)].FunctionName'
+### Environment-Specific Diagnostic Commands
 
-# View recent logs  
-aws logs filter-log-events --log-group-name "/aws/lambda/pubsub-publisher" --start-time $(date -d '1 hour ago' +%s)000
+```powershell
+# List functions by environment
+aws lambda list-functions --query 'Functions[?contains(FunctionName, `aws-lambda-pubsub-sns-dev`)].FunctionName'
+aws lambda list-functions --query 'Functions[?contains(FunctionName, `aws-lambda-pubsub-sns-stage`)].FunctionName'
+aws lambda list-functions --query 'Functions[?contains(FunctionName, `aws-lambda-pubsub-sns-prod`)].FunctionName'
 
-# Check SNS metrics
-aws cloudwatch get-metric-statistics --namespace AWS/SNS --metric-name NumberOfMessagesPublished --start-time $(date -d '1 hour ago' --iso-8601) --end-time $(date --iso-8601) --period 300 --statistics Sum --dimensions Name=TopicName,Value=pubsub-topic
+# Check environment-specific logs
+aws logs filter-log-events --log-group-name "/aws/lambda/aws-lambda-pubsub-sns-dev-publisher" --since 1h
+aws logs filter-log-events --log-group-name "/aws/lambda/aws-lambda-pubsub-sns-stage-subscriber" --since 1h
+
+# Check CloudWatch alarms by environment
+aws cloudwatch describe-alarms --alarm-name-prefix "aws-lambda-pubsub-sns-stage"
+aws cloudwatch describe-alarms --alarm-name-prefix "aws-lambda-pubsub-sns-prod"
+
+# Validate Terraform workspaces
+terraform workspace list
+terraform workspace show
 ```
 
 ## License
