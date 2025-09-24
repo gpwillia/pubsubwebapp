@@ -1,0 +1,69 @@
+# Project Configuration
+project_name = "aws-lambda-pubsub-sns"
+environment  = "dev"
+aws_region   = "us-east-1"
+
+# Lambda Configuration
+lambda_runtime           = "python3.9"
+lambda_architecture      = "arm64"
+publisher_memory_size    = 256
+subscriber_memory_size   = 512
+lambda_timeout           = 30
+
+# Networking (Optional - leave empty for default VPC)
+vpc_id             = ""
+subnet_ids         = []
+security_group_ids = []
+
+# SNS Configuration
+sns_display_name = "PubSub Topic"
+
+# SNS Delivery Policy
+sns_delivery_policy = {
+  max_delay_target          = 20
+  min_delay_target          = 20
+  num_retries               = 3
+  num_max_delay_retries     = 0
+  num_min_delay_retries     = 0
+  num_no_delay_retries      = 0
+  backup_failure_retry_policy = -1
+}
+
+# Monitoring Configuration
+enable_monitoring      = true
+log_retention_in_days = 14
+
+# Features Configuration
+enable_audit_trail   = false
+enable_xray_tracing = true
+
+# Dead Letter Queue Configuration
+dlq_retention_seconds = 1209600  # 14 days
+
+# Lambda Environment Variables
+log_level   = "INFO"
+max_retries = 3
+
+# Cost Optimization
+reserved_concurrent_executions = -1  # -1 = unreserved
+
+# Security (Optional)
+kms_key_id = ""
+
+# Monitoring Alerts (Optional)
+sns_alarm_topic_arn = ""
+enable_dlq_alerts   = false
+alert_email        = ""
+
+# API Gateway (Optional)
+create_api_gateway = false
+
+# Lambda Layer (Optional)
+create_common_layer = false
+
+# Additional Tags
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Compliance  = "SOC2"
+}
