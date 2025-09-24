@@ -47,7 +47,6 @@ resource "aws_lambda_function" "publisher" {
       LOG_LEVEL            = var.log_level
       MAX_RETRIES          = var.max_retries
       TIMEOUT_SECONDS      = var.lambda_timeout
-      AWS_REGION           = var.aws_region
     }
   }
 
@@ -97,7 +96,6 @@ resource "aws_lambda_function" "subscriber" {
       LOG_LEVEL               = var.log_level
       MAX_RETRIES             = var.max_retries
       TIMEOUT_SECONDS         = var.lambda_timeout
-      AWS_REGION              = var.aws_region
       PROCESSING_RESULTS_TABLE = var.enable_audit_trail ? aws_dynamodb_table.processing_results[0].name : ""
       RESULT_TTL_DAYS         = "7"
       DLQ_ARN                 = aws_sqs_queue.dlq.arn

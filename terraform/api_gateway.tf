@@ -82,10 +82,6 @@ resource "aws_api_gateway_method_response" "publish_post" {
   resource_id = aws_api_gateway_resource.publish[0].id
   http_method = aws_api_gateway_method.publish_post[0].http_method
   status_code = "200"
-
-  response_headers = {
-    "Access-Control-Allow-Origin" = true
-  }
 }
 
 resource "aws_api_gateway_method_response" "publish_options" {
@@ -96,11 +92,7 @@ resource "aws_api_gateway_method_response" "publish_options" {
   http_method = aws_api_gateway_method.publish_options[0].http_method
   status_code = "200"
 
-  response_headers = {
-    "Access-Control-Allow-Headers" = true
-    "Access-Control-Allow-Methods" = true
-    "Access-Control-Allow-Origin"  = true
-  }
+
 }
 
 resource "aws_api_gateway_integration_response" "publisher_lambda" {
@@ -111,9 +103,7 @@ resource "aws_api_gateway_integration_response" "publisher_lambda" {
   http_method = aws_api_gateway_method.publish_post[0].http_method
   status_code = aws_api_gateway_method_response.publish_post[0].status_code
 
-  response_headers = {
-    "Access-Control-Allow-Origin" = "'*'"
-  }
+
 
   depends_on = [
     aws_api_gateway_integration.publisher_lambda
@@ -128,11 +118,7 @@ resource "aws_api_gateway_integration_response" "publish_options" {
   http_method = aws_api_gateway_method.publish_options[0].http_method
   status_code = aws_api_gateway_method_response.publish_options[0].status_code
 
-  response_headers = {
-    "Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-    "Access-Control-Allow-Methods" = "'POST,OPTIONS'"
-    "Access-Control-Allow-Origin"  = "'*'"
-  }
+
 
   depends_on = [
     aws_api_gateway_integration.publish_options

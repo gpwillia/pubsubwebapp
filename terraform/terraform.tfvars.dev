@@ -2,25 +2,11 @@
 environment = "dev"
 aws_region  = "us-east-1"
 
-# Lambda Configuration
-lambda_memory_size = 256
-lambda_timeout     = 30
-lambda_runtime     = "python3.9"
-
 # Monitoring (disabled for cost savings in dev)
 enable_monitoring = false
 
-# VPC Configuration (disabled for simplicity in dev)
-vpc_config = {
-  vpc_id     = null
-  subnet_ids = []
-}
-
-# API Gateway (optional for dev)
-enable_api_gateway = false
-
-# Performance Settings (lower for dev)
-reserved_concurrent_executions = 10
+# API Gateway (disabled for dev)
+create_api_gateway = false
 
 # Tags
 tags = {

@@ -1,0 +1,6 @@
+{
+  "message": "Hello from Dev environment!",
+  "messageAttributes": {
+    "Environment": "dev"
+  }
+}

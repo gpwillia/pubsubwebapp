@@ -148,6 +148,13 @@ resource "aws_iam_role_policy" "subscriber_lambda_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "${aws_cloudwatch_log_group.subscriber_logs.arn}:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.dlq.arn
       }
     ]
   })

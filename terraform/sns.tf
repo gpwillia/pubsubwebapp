@@ -51,24 +51,6 @@ resource "aws_sns_topic_policy" "main" {
             "aws:SourceAccount" = data.aws_caller_identity.current.account_id
           }
         }
-      },
-      {
-        Sid    = "AllowSubscriberLambdaReceive"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-        Action = [
-          "sns:Subscribe",
-          "sns:Unsubscribe",
-          "sns:Receive"
-        ]
-        Resource = aws_sns_topic.main.arn
-        Condition = {
-          StringEquals = {
-            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
-          }
-        }
       }
     ]
   })
@@ -78,7 +60,7 @@ resource "aws_sns_topic_policy" "main" {
 resource "aws_sns_topic_subscription" "subscriber_lambda" {
   topic_arn              = aws_sns_topic.main.arn
   protocol               = "lambda"
-  endpoint               = aws_lambda_function.subscriber.arn
+  endpoint               = aws_lambda_alias.subscriber_live.arn
   confirmation_timeout_in_minutes = 1
   
   # Subscription attributes

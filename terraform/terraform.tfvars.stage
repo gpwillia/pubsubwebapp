@@ -1,0 +1,46 @@
+# Stage Environment Configuration
+# This configuration enables more monitoring and security features for staging
+
+# Basic Settings
+environment = "stage"
+aws_region = "us-east-1"
+
+# Lambda Configuration
+lambda_runtime = "python3.9"
+lambda_architecture = "arm64"
+lambda_timeout = 30
+reserved_concurrent_executions = -1
+
+# Publisher Lambda Settings
+publisher_memory_size = 256
+
+# Subscriber Lambda Settings  
+subscriber_memory_size = 512
+
+# Monitoring and Observability (ENABLED for stage)
+enable_monitoring = true
+enable_xray_tracing = true
+log_retention_days = 14
+
+# DLQ Configuration
+dlq_retention_days = 14
+
+# Audit Trail (ENABLED for stage testing)
+enable_audit_trail = true
+
+# API Gateway (disabled for stage)
+create_api_gateway = false
+
+# Logging
+log_level = "INFO"
+max_retries = 3
+
+# Common tags for all resources
+tags = {
+  Environment = "stage"
+  Project = "aws-lambda-pubsub-sns"
+  ManagedBy = "terraform"
+  CreatedBy = "terraform"
+  CostCenter = "engineering"
+  Owner = "platform-team"
+}

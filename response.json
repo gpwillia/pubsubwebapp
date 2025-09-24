@@ -1,0 +1,1 @@
+{"statusCode": 200, "body": "{\"message\": \"Message published successfully\", \"messageId\": \"90225e79-1bff-56a8-a114-3f370aba5d6e\", \"correlationId\": \"ea6f12e7-e316-4f13-a972-62bd125c962c\", \"timestamp\": \"2025-09-24T15:32:21.998554\"}", "headers": {"Content-Type": "application/json", "X-Correlation-ID": "ea6f12e7-e316-4f13-a972-62bd125c962c"}}

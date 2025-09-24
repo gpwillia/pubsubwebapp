@@ -389,10 +389,10 @@ resource "aws_cloudwatch_metric_alarm" "sns_failed_notifications" {
   })
 }
 
-resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
+resource "aws_cloudwatch_metric_alarm" "dlq_messages_advanced" {
   count = var.enable_monitoring ? 1 : 0
 
-  alarm_name          = "${local.name_prefix}-dlq-messages"
+  alarm_name          = "${local.name_prefix}-dlq-messages-advanced"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "ApproximateNumberOfVisibleMessages"
@@ -400,7 +400,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
   period              = "300"
   statistic           = "Average"
   threshold           = "0"
-  alarm_description   = "This metric monitors DLQ message count"
+  alarm_description   = "This metric monitors DLQ message count (advanced)"
   alarm_actions       = var.sns_alarm_topic_arn != "" ? [var.sns_alarm_topic_arn] : []
 
   dimensions = {
@@ -408,7 +408,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
   }
 
   tags = merge(local.common_tags, {
-    Name = "${local.name_prefix}-dlq-messages-alarm"
+    Name = "${local.name_prefix}-dlq-messages-advanced-alarm"
   })
 }
 

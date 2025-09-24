@@ -83,8 +83,9 @@ resource "aws_dynamodb_table" "processing_results" {
   }
 
   global_secondary_index {
-    name     = "CorrelationIdIndex"
-    hash_key = "correlationId"
+    name               = "CorrelationIdIndex"
+    hash_key           = "correlationId"
+    projection_type    = "ALL"
   }
 
   ttl {

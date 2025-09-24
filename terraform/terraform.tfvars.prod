@@ -1,0 +1,54 @@
+# Production Environment Configuration
+# This configuration has enhanced monitoring, security, and performance settings
+
+# Basic Settings
+environment = "prod"
+aws_region = "us-east-1"
+
+# Lambda Configuration
+lambda_runtime = "python3.9"
+lambda_architecture = "arm64"
+lambda_timeout = 30
+reserved_concurrent_executions = 100  # Set concurrency limits for production
+
+# Publisher Lambda Settings
+publisher_memory_size = 512  # Higher memory for production workloads
+
+# Subscriber Lambda Settings
+subscriber_memory_size = 1024  # Higher memory for production processing
+
+# Monitoring and Observability (FULLY ENABLED for production)
+enable_monitoring = true
+enable_xray_tracing = true
+log_retention_days = 30  # Longer retention for production
+
+# DLQ Configuration
+dlq_retention_days = 30  # Longer retention for production debugging
+
+# Audit Trail (ENABLED for production compliance)
+enable_audit_trail = true
+
+# API Gateway (enabled for production)
+create_api_gateway = true
+
+# Logging (reduced for production)
+log_level = "WARN"
+max_retries = 5
+
+# VPC Configuration (uncomment and configure if using VPC)
+# vpc_id = "vpc-xxxxxxxxx"
+# subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]  
+# security_group_ids = ["sg-xxxxxxxxx"]
+
+# Common tags for all resources
+tags = {
+  Environment = "prod"
+  Project = "aws-lambda-pubsub-sns"
+  ManagedBy = "terraform"
+  CreatedBy = "terraform"
+  CostCenter = "production"
+  Owner = "platform-team"
+  DataClassification = "internal"
+  BackupRequired = "true"
+  MonitoringLevel = "enhanced"
+}
